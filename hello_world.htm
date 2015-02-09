@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<!-- the doctype tells it not to try using xhtml or something stupid -->
+<html>
+<head>
+<!-- you don't need to worry about japanese characters or anything exotic -->
+<meta charset="utf8">
+<style>
+/* normally you'd use external stylesheets and scripts */
+
+    body {
+        text-align: center; /* this centers the form */
+    }
+
+    #sampleBox {
+        background-color: #4b96e1; /* hex values.  notice that rgb works, too */
+        border: solid 1px;
+        width: 100px;
+        height: 100px;
+        margin: 0 auto; /* this is what makes the box centered */
+    }
+</style>
+</head>
+
+<body>
+
+<form id="colorForm">
+    <p>Change the square's background colors using RGB decimal values (0-255):</p>
+    <label for="red">Red: <input id="red" type="number" min="0" max="255"></label>
+    <label for="green">Green: <input id="green" type="number" min="0" max="255"></label>
+    <label for="blue">Blue: <input id="blue" type="number" min="0" max="255"></label>
+</form>
+
+<!-- no text here.  the CSS for this element will be manipulated by javascript. -->
+<div id="sampleBox">
+</div>
+
+<script>
+'use strict';
+//adding this line to the very beginning of scripts saves you headaches
+
+/* it's usually recommended to put scripts at the bottom to make the page load seem faster */
+
+var colorForm = document.getElementById('colorForm');
+colorForm.addEventListener('submit', function(e){
+    /* you don't want the user to leave the page when they hit enter */
+    e.preventDefault();
+
+    /* notice how the function definition is below the spot where the function 
+       is first used.  functions can also be defined in external files.
+    */
+    updateBox();
+});
+
+colorForm.addEventListener('change', function(e){
+    //this way the square's color is updated when you tab through the inputs
+    updateBox();
+});
+
+//the boxes would be blank without calling this function.
+updateInputs();
+
+//this changes the color of the box, based on the inputs
+function updateBox(){
+    var box = document.getElementById('sampleBox'); //one element
+    var inputs = colorForm.getElementsByTagName('input'); //list of 3 elements
+
+    //the list is not a proper Array, for technical reasons nobody care about.
+    //if you were using a library like lodash.js, you could do this instead:
+
+    /* var colors = _.pluck(inputs, 'value'); */
+
+    //that way is a lot easier to understand.  that's one of the motivations for using libraries.
+
+    var colors = Array.prototype.map.call(inputs, function(input){
+        return input.value;
+    });
+
+    //this is where the javascript is changing the CSS.
+    box.style.backgroundColor = 'rgb(' + colors.join(',') + ')';
+};
+
+//this changes the numbers in the inputs, based on the color of the box
+//it's used during page load.  this way, you could change the color in the CSS
+//and the forms will automatically have the right value when the page loads
+function updateInputs(){
+    var sampleBox = document.getElementById('sampleBox');
+
+    //using CSS selectors within javascript is often shorter and easier to understand
+    var inputs = document.querySelectorAll('#colorForm input');
+
+    //colorString looks like "rgb(12, 34, 56)" or similar
+    var colorString = getComputedStyle(sampleBox).getPropertyValue('background-color');
+
+    //using regular expressions to get something like ['12', '34', '56']
+    var colors = colorString.match(/\d+/g);
+
+    for (var i = 0; i<inputs.length; i++){
+        inputs[i].value = colors[i];
+        /*
+            [input#red, input#green, input#blue] <-- inputs
+            ['12',      '34',        '56'      ] <-- colors
+
+        */
+    };
+};
+</script>
